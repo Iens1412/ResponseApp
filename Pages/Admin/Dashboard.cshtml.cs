@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ResponseApp.Data;
+using ResponseApp.Models;
 using ResponseApp.Services;
 using System;
 using System.Collections.Generic;
@@ -16,24 +18,27 @@ namespace ResponseApp.Pages.Admin
     public class DashboardModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IConfiguration _configuration;
         private readonly ILogger<DashboardModel> _logger;
         private readonly IInviteService _inviteService;
+        private readonly ApplicationDbContext _appDbContext;
 
         public DashboardModel(
             UserManager<IdentityUser> userManager,
-            IConfiguration configuration,
             ILogger<DashboardModel> logger,
-            IInviteService inviteService)
+            IInviteService inviteService,
+            ApplicationDbContext appDbContext)
         {
             _userManager = userManager;
-            _configuration = configuration;
             _logger = logger;
             _inviteService = inviteService;
+            _appDbContext = appDbContext;
         }
 
         [BindProperty(SupportsGet = true)]
         public string GeneratedInviteLink { get; set; }
+
+        [BindProperty]
+        public string CurrentDatabasePath { get; set; }
 
         public List<IdentityUser> Users { get; set; }
 
@@ -45,6 +50,7 @@ namespace ResponseApp.Pages.Admin
                 ViewData["GeneratedInviteLink"] = GeneratedInviteLink;
             }
 
+            LoadCurrentDatabasePath();
             Users = _userManager.Users.ToList();
             return Page();
         }
@@ -79,6 +85,42 @@ namespace ResponseApp.Pages.Admin
             await _userManager.ResetPasswordAsync(user, token, newPassword);
 
             TempData["StatusMessage"] = $"Password for {user.Email} reset to 'NewUser123!'";
+            return RedirectToPage();
+        }
+
+        private void LoadCurrentDatabasePath()
+        {
+            CurrentDatabasePath = _appDbContext.SystemSettings.FirstOrDefault(s => s.Key == "ExternalDbPath")?.Value ?? string.Empty;
+        }
+
+        public async Task<IActionResult> OnPostSaveDbPathAsync()
+        {
+            if (string.IsNullOrWhiteSpace(CurrentDatabasePath) || !System.IO.File.Exists(CurrentDatabasePath))
+            {
+                TempData["StatusMessage"] = "Invalid or missing file path.";
+                return RedirectToPage();
+            }
+
+            Console.WriteLine("Selected DB Path: " + CurrentDatabasePath);
+
+            var setting = _appDbContext.SystemSettings.FirstOrDefault(s => s.Key == "ExternalDbPath");
+            if (setting == null)
+            {
+                _appDbContext.SystemSettings.Add(new SystemSetting
+                {
+                    Key = "ExternalDbPath",
+                    Value = CurrentDatabasePath
+                });
+                Console.WriteLine("New DB path setting created.");
+            }
+            else
+            {
+                setting.Value = CurrentDatabasePath;
+                Console.WriteLine("Existing DB path updated.");
+            }
+
+            await _appDbContext.SaveChangesAsync();
+            TempData["StatusMessage"] = "Database path saved successfully.";
             return RedirectToPage();
         }
     }

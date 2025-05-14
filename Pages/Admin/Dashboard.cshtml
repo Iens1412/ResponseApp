@@ -41,6 +41,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- External DB Upload Section -->
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Select External Feedback DB</h5>
+                    <form method="post" asp-page-handler="SaveDbPath">
+                        <div class="mb-3">
+                            <label class="form-label">Enter Full Path to .db File</label>
+                            <input type="text" name="CurrentDatabasePath" class="form-control" placeholder="C:\path\to\your.db" required />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.CurrentDatabasePath))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Currently Selected DB Path</label>
+                                <textarea class="form-control" rows="2" readonly>@Model.CurrentDatabasePath</textarea>
+                            </div>
+                        }
+
+                        <button type="submit" class="btn btn-primary w-100">Save Path</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
