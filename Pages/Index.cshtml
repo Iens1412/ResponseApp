@@ -19,11 +19,14 @@
 <div class="container py-5">
     <h1 class="mb-4 text-center">📚 Response Management Dashboard</h1>
 
-    <!-- Hidden Selection Form for fallback (non-JS) -->
+    <!-- Hidden Selection Form -->
     <form method="get" id="selectionForm">
         <input type="hidden" name="SelectedCourseId" id="SelectedCourseId" value="@Model.SelectedCourseId" />
         <input type="hidden" name="SelectedAssignmentId" id="SelectedAssignmentId" value="@Model.SelectedAssignmentId" />
         <input type="hidden" name="SelectedResponseId" id="SelectedResponseId" value="@Model.SelectedResponseId" />
+        <input type="hidden" name="CourseSort" id="CourseSort" value="@Model.CourseSort" />
+        <input type="hidden" name="AssignmentSort" id="AssignmentSort" value="@Model.AssignmentSort" />
+        <input type="hidden" name="ResponseSort" id="ResponseSort" value="@Model.ResponseSort" />
     </form>
 
     <div id="dashboardContent">
@@ -71,6 +74,11 @@
             document.getElementById("dashboardContent").innerHTML = html;
         }
 
+        function sortList(field, direction) {
+            document.getElementById(field).value = direction;
+            reloadDashboard();
+        }
+
         document.addEventListener("submit", async (e) => {
             const form = e.target.closest("form[data-ajax]");
             if (!form) return;
@@ -92,4 +100,3 @@
         });
     </script>
 }
-

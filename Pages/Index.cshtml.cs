@@ -30,6 +30,10 @@ namespace ResponseApp.Pages
         [BindProperty(SupportsGet = true)] public int? SelectedAssignmentId { get; set; }
         [BindProperty(SupportsGet = true)] public int? SelectedResponseId { get; set; }
 
+        [BindProperty(SupportsGet = true)] public string CourseSort { get; set; } = "asc";
+        [BindProperty(SupportsGet = true)] public string AssignmentSort { get; set; } = "asc";
+        [BindProperty(SupportsGet = true)] public string ResponseSort { get; set; } = "asc";
+
         [BindProperty] public string NewCourseName { get; set; } = "";
         [BindProperty] public string NewCourseDescription { get; set; } = "";
 
@@ -222,12 +226,17 @@ namespace ResponseApp.Pages
             opts.UseSqlite($"Data Source={path}");
             using var db = new ExternalDbContext(opts.Options);
 
-            Courses = db.Courses.ToList();
+            Courses = CourseSort == "desc" ? db.Courses.OrderByDescending(c => c.CourseName).ToList() : db.Courses.OrderBy(c => c.CourseName).ToList();
+
             if (SelectedCourseId.HasValue)
-                Assignments = db.Assignments.Where(a => a.CourseId == SelectedCourseId.Value).ToList();
+                Assignments = AssignmentSort == "desc"
+                    ? db.Assignments.Where(a => a.CourseId == SelectedCourseId.Value).OrderByDescending(a => a.AssignmentTitle).ToList()
+                    : db.Assignments.Where(a => a.CourseId == SelectedCourseId.Value).OrderBy(a => a.AssignmentTitle).ToList();
 
             if (SelectedAssignmentId.HasValue)
-                Responses = db.Responses.Where(r => r.AssignmentId == SelectedAssignmentId.Value).ToList();
+                Responses = ResponseSort == "desc"
+                    ? db.Responses.Where(r => r.AssignmentId == SelectedAssignmentId.Value).OrderByDescending(r => r.ResponseTitle).ToList()
+                    : db.Responses.Where(r => r.AssignmentId == SelectedAssignmentId.Value).OrderBy(r => r.ResponseTitle).ToList();
 
             if (SelectedResponseId.HasValue)
                 ResponseText = db.Responses.FirstOrDefault(r => r.Id == SelectedResponseId.Value)?.ResponseText ?? "";
