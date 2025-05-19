@@ -252,5 +252,60 @@ namespace ResponseApp.Pages
             optionsBuilder.UseSqlite($"Data Source={path}");
             return new ExternalDbContext(optionsBuilder.Options);
         }
+
+        public async Task<IActionResult> OnPostExportCourseAsync()
+        {
+            var db = GetExternalDb();
+            if (db == null || !SelectedCourseId.HasValue) return BadRequest();
+
+            var course = await db.Courses.FindAsync(SelectedCourseId.Value);
+            var assignments = db.Assignments.Where(a => a.CourseId == course.Id).ToList();
+            var responses = db.Responses.Where(r => assignments.Select(a => a.Id).Contains(r.AssignmentId)).ToList();
+
+            // Create temp export db
+            var tempPath = Path.GetTempFileName().Replace(".tmp", ".db");
+            CreateNewDatabase(tempPath, course, assignments, responses);
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(tempPath);
+            System.IO.File.Delete(tempPath);
+
+            return File(bytes, "application/x-sqlite3", $"{course.CourseName}.db");
+        }
+
+        public async Task<IActionResult> OnPostExportAssignmentAsync()
+        {
+            var db = GetExternalDb();
+            if (db == null || !SelectedAssignmentId.HasValue) return BadRequest();
+
+            var assignment = await db.Assignments.FindAsync(SelectedAssignmentId.Value);
+            var course = await db.Courses.FindAsync(assignment.CourseId);
+            var responses = db.Responses.Where(r => r.AssignmentId == assignment.Id).ToList();
+
+            var tempPath = Path.GetTempFileName().Replace(".tmp", ".db");
+            CreateNewDatabase(tempPath, course, new List<Assignment> { assignment }, responses);
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(tempPath);
+            System.IO.File.Delete(tempPath);
+
+            return File(bytes, "application/x-sqlite3", $"{assignment.AssignmentTitle}.db");
+        }
+
+        private void CreateNewDatabase(string path, Course course, List<Assignment> assignments, List<ResponseApp.Models.Response> responses)
+        {
+            if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+
+            var options = new DbContextOptionsBuilder<ExternalDbContext>()
+                .UseSqlite($"Data Source={path}")
+                .Options;
+
+            using var exportDb = new ExternalDbContext(options);
+            exportDb.Database.EnsureCreated();
+
+            exportDb.Courses.Add(course);
+            exportDb.Assignments.AddRange(assignments);
+            exportDb.Responses.AddRange(responses);
+
+            exportDb.SaveChanges();
+        }
     }
 }

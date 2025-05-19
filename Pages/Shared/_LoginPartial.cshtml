@@ -33,10 +33,3 @@
         </li>
     }
 </ul>
-
-<form asp-controller="Culture" asp-action="SetLanguage" method="post" class="ms-3">
-    <select name="culture" onchange="this.form.submit()" class="form-select form-select-sm">
-        <option value="en" selected="@((CultureInfo.CurrentUICulture.Name == "en").ToString().ToLower())">English</option>
-        <option value="sv" selected="@((CultureInfo.CurrentUICulture.Name == "sv").ToString().ToLower())">Svenska</option>
-    </select>
-</form>

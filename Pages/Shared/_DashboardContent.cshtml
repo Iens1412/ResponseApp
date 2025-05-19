@@ -49,6 +49,12 @@
                             <i class="bi bi-trash"></i> Delete
                         </button>
                     </form>
+                    <form method="post" asp-page-handler="ExportCourse">
+                        <input type="hidden" name="SelectedCourseId" value="@Model.SelectedCourseId" />
+                        <button class="btn btn-outline-info w-100 mt-2">
+                            <i class="bi bi-box-arrow-down"></i> Export Course
+                        </button>
+                    </form>
                 }
             </div>
         </div>
@@ -103,6 +109,12 @@
                         <input type="hidden" name="SelectedAssignmentId" value="@Model.SelectedAssignmentId" />
                         <button class="btn btn-outline-danger w-100" onclick="return confirm('Delete assignment and its responses?')">
                             <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="ExportAssignment">
+                        <input type="hidden" name="SelectedAssignmentId" value="@Model.SelectedAssignmentId" />
+                        <button class="btn btn-outline-info w-100 mt-2">
+                            <i class="bi bi-box-arrow-down"></i> Export Assignment
                         </button>
                     </form>
                 }
