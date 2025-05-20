@@ -29,6 +29,14 @@ public class Program
         })
         .AddRoles<IdentityRole>() // Enable role system
         .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.SlidingExpiration = true;
+            options.LoginPath = "/Identity/Account/Login";
+        });
+
         builder.Services.AddScoped<IInviteService, InviteService>();
         builder.Services.AddRazorPages();
 
@@ -42,11 +50,9 @@ public class Program
         else
         {
             app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
         app.UseStaticFiles();
 
         app.UseRouting();
