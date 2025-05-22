@@ -1,10 +1,102 @@
 ﻿@page
 @model IndexModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @{
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+<style>
+    .list-hover:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+</style>
+
+<div class="container py-5">
+    <h1 class="mb-4 text-center">📚 Response Management Dashboard</h1>
+
+    <!-- Hidden Selection Form -->
+    <form method="get" id="selectionForm">
+        <input type="hidden" name="SelectedCourseId" id="SelectedCourseId" value="@Model.SelectedCourseId" />
+        <input type="hidden" name="SelectedAssignmentId" id="SelectedAssignmentId" value="@Model.SelectedAssignmentId" />
+        <input type="hidden" name="SelectedResponseId" id="SelectedResponseId" value="@Model.SelectedResponseId" />
+        <input type="hidden" name="CourseSort" id="CourseSort" value="@Model.CourseSort" />
+        <input type="hidden" name="AssignmentSort" id="AssignmentSort" value="@Model.AssignmentSort" />
+        <input type="hidden" name="ResponseSort" id="ResponseSort" value="@Model.ResponseSort" />
+    </form>
+
+    <div id="dashboardContent">
+        @await Html.PartialAsync("_DashboardContent", Model)
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        async function selectCourse(id) {
+            updateSelections({ courseId: id });
+            await reloadDashboard();
+        }
+
+        async function selectAssignment(id) {
+            updateSelections({ assignmentId: id });
+            await reloadDashboard();
+        }
+
+        async function selectResponse(id) {
+            updateSelections({ responseId: id });
+            await reloadDashboard();
+        }
+
+        function updateSelections({ courseId, assignmentId, responseId }) {
+            if (courseId !== undefined) {
+                document.getElementById("SelectedCourseId").value = courseId;
+                document.getElementById("SelectedAssignmentId").value = "";
+                document.getElementById("SelectedResponseId").value = "";
+            }
+            if (assignmentId !== undefined) {
+                document.getElementById("SelectedAssignmentId").value = assignmentId;
+                document.getElementById("SelectedResponseId").value = "";
+            }
+            if (responseId !== undefined) {
+                document.getElementById("SelectedResponseId").value = responseId;
+            }
+        }
+
+        async function reloadDashboard() {
+            const formData = new FormData(document.getElementById("selectionForm"));
+            const query = new URLSearchParams(formData).toString();
+            const response = await fetch(`?handler=Partial&${query}`);
+            const html = await response.text();
+            document.getElementById("dashboardContent").innerHTML = html;
+        }
+
+        function sortList(field, direction) {
+            document.getElementById(field).value = direction;
+            reloadDashboard();
+        }
+
+        document.addEventListener("submit", async (e) => {
+            const form = e.target.closest("form[data-ajax]");
+            if (!form) return;
+            e.preventDefault();
+            const formData = new FormData(form);
+            const action = form.getAttribute("action") || window.location.pathname;
+            const method = form.getAttribute("method") || "post";
+
+            const response = await fetch(action, {
+                method: method,
+                body: formData
+            });
+
+            if (response.ok) {
+                await reloadDashboard();
+            } else {
+                alert("Failed to save. Please try again.");
+            }
+        });
+    </script>
+}

@@ -1,0 +1,62 @@
+﻿@page "{token?}"
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<style>
+    body {
+        background-color: #e6f2ff; /* Light blue */
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg w-100" style="max-width: 500px;">
+        <div class="p-5">
+            <h2 class="text-center mb-4">Create a new account</h2>
+
+            @if (!Model.IsInviteValid)
+            {
+                <div class="alert alert-danger text-center">
+                    Invalid or expired invite link.
+                </div>
+            }
+            else
+            {
+                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" placeholder="Password" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Confirm Password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <input type="hidden" name="InviteToken" value="@Model.InviteToken" />
+
+                    <button id="registerSubmit" type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
+
+                    <div class="text-center mt-4 small">
+                        <p>Already have an account? <a asp-page="./Login">Log in</a></p>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,8 +1,29 @@
 ﻿@page
 @model PrivacyModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
 @{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-primary mb-4">@ViewData["Title"]</h2>
+                    <p class="lead text-muted">
+                        This application stores user data for account management and usage tracking purposes.
+                        Your information is never shared with third parties. Data is stored securely according to current best practices.
+                    </p>
+                    <hr />
+                    <p>
+                        By using this application, you agree to our handling of personal data as described above.
+                        For further questions, contact The App Owner.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
