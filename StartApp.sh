@@ -1,16 +1,22 @@
 #!/bin/bash
 
-# Get local IP address (assumes en0 or fallback to first inet)
-IP=$(ipconfig getifaddr en0 2>/dev/null || ifconfig | grep 'inet ' | grep -v 127.0.0.1 | awk '{ print $2 }' | head -n 1)
+# Get LAN IP address (preferring 192.168.*.*)
+IP=$(ifconfig | grep 'inet ' | grep '192\.168\.' | awk '{ print $2 }' | head -n 1)
+
+if [ -z "$IP" ]; then
+  echo " Could not determine LAN IP address (192.168.x.x)"
+  exit 1
+fi
+
 URL="http://$IP:5000"
 
-echo "Starting the app at $URL"
+echo " Starting the app at $URL"
 
 # Start the app in background
 ./ResponseApp --urls "http://0.0.0.0:5000" &
 
-# Give it a second to start
+# Wait briefly to allow app startup
 sleep 2
 
-# Open in browser
+# Open in default browser
 open "$URL"
